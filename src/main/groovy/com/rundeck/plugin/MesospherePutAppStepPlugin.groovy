@@ -1,6 +1,5 @@
 package com.rundeck.plugin
 
-import com.dtolabs.rundeck.core.execution.workflow.steps.FailureReason
 import com.dtolabs.rundeck.core.execution.workflow.steps.StepException
 import com.dtolabs.rundeck.core.plugins.Plugin
 import com.dtolabs.rundeck.plugins.ServiceNameConstants
@@ -8,9 +7,7 @@ import com.dtolabs.rundeck.plugins.descriptions.PluginDescription
 import com.dtolabs.rundeck.plugins.descriptions.PluginProperty
 import com.dtolabs.rundeck.plugins.step.PluginStepContext
 import com.dtolabs.rundeck.plugins.step.StepPlugin
-import groovyx.net.http.ContentType
-import groovyx.net.http.HTTPBuilder
-import groovyx.net.http.Method
+import com.rundeck.plugin.util.RestClientUtils
 
 /**
  * Created by carlos on 29/12/17.
@@ -20,7 +17,6 @@ import groovyx.net.http.Method
         description = "Change multiple applications either by upgrading existing ones or creating new ones.")
 public class MesospherePutAppStepPlugin implements StepPlugin {
     public static final String PROVIDER_NAME = "mesos-put-app-step";
-    public static final String URI_PATH = "/v2/apps/"
 
     @PluginProperty(title = "Mesos Service Api URL", required = true,
             description = "Address to access mesos service api."
@@ -165,32 +161,7 @@ public class MesospherePutAppStepPlugin implements StepPlugin {
 
     @Override
     void executeStep(PluginStepContext context, Map<String, Object> configuration) throws StepException {
-        def serviceAPI = new HTTPBuilder(mesosServiceApiURL)
-
-        serviceAPI.request(Method.POST, ContentType.JSON){ req ->
-            uri.path = URI_PATH
-            uri.query = [format:'json']
-            body = getMapPropertiesToRequest()
-
-            response.success = { resp, json ->
-                assert [200, 201].contains(resp.status)
-                HashMap<String, String> meta = new HashMap<>();
-                meta.put("content-data-type", "application/json");
-                context.getExecutionContext().getExecutionListener().event("log", json.toString(), meta);
-            }
-            response.failure = { resp, json ->
-                throw new StepException(
-                        "Put app on mesos service error",
-                        e,
-                        MesosFailReason.PutAppError
-                );
-            }
-        }
-
-    }
-
-    public enum MesosFailReason implements FailureReason {
-        PutAppError
+        RestClientUtils.putApp(mesosServiceApiURL, id, getMapPropertiesToRequest(), context)
     }
 
     private Map getMapPropertiesToRequest(){

@@ -5,7 +5,7 @@ plugins {
 group 'com.rundeck'
 
 ext.rundeckPluginVersion = '1.2'
-ext.pluginClassNames='com.rundeck.plugin.MesospherePutAppStepPlugin'
+ext.pluginClassNames='com.rundeck.plugin.MesospherePutAppStepPlugin,com.rundeck.plugin.MesosphereGetTasksStepPlugin,com.rundeck.plugin.MesosphereDeleteTasksStepPlugin'
 ext.pluginName = 'Mesos Step Plugin'
 ext.pluginDescription = 'Step plugin for Mesos API'
 
