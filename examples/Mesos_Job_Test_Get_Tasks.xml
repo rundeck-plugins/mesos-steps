@@ -1,0 +1,22 @@
+<joblist>
+  <job>
+    <description></description>
+    <executionEnabled>true</executionEnabled>
+    <id>106f228f-5d52-4bba-a4f3-e1fae7e05adc</id>
+    <loglevel>INFO</loglevel>
+    <name>Mesos Job Test Get Tasks</name>
+    <nodeFilterEditable>false</nodeFilterEditable>
+    <scheduleEnabled>true</scheduleEnabled>
+    <sequence keepgoing='false' strategy='node-first'>
+      <command>
+        <step-plugin type='mesos-get-tasks-step'>
+          <configuration>
+            <entry key='id' value='/test1' />
+            <entry key='mesosServiceApiURL' value='http://ec2-54-218-40-91.us-west-2.compute.amazonaws.com:8080' />
+          </configuration>
+        </step-plugin>
+      </command>
+    </sequence>
+    <uuid>106f228f-5d52-4bba-a4f3-e1fae7e05adc</uuid>
+  </job>
+</joblist>

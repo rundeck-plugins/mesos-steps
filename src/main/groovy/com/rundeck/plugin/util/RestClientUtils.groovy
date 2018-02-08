@@ -30,42 +30,36 @@ class RestClientUtils {
             response.'400' = { resp ->
                 throw new StepException(
                         "Invalid JSON",
-                        e,
                         MesosFailReason.InvalidJSON
                 );
             }
             response.'401' = { resp ->
                 throw new StepException(
                         "Invalid username or password.",
-                        e,
                         MesosFailReason.InvalidUser
                 );
             }
             response.'403' = { resp ->
                 throw new StepException(
                         "Not Authorized to perform this action!",
-                        e,
                         MesosFailReason.NotAuthorized
                 );
             }
             response.'409' = { resp ->
                 throw new StepException(
                         "An app with id [/existing_app] already exists.",
-                        e,
                         MesosFailReason.AppAlreadyExists
                 );
             }
             response.'422' = { resp ->
                 throw new StepException(
                         "Object is not valid",
-                        e,
                         MesosFailReason.InvalidObject
                 );
             }
             response.failure = { resp, json ->
                 throw new StepException(
                         "Put app on mesos service error",
-                        e,
                         MesosFailReason.requestFailed
                 );
             }
@@ -87,28 +81,24 @@ class RestClientUtils {
             response.'401' = { resp ->
                 throw new StepException(
                         "Invalid username or password.",
-                        e,
                         MesosFailReason.InvalidUser
                 );
             }
             response.'403' = { resp ->
                 throw new StepException(
                         "Not Authorized to perform this action!",
-                        e,
                         MesosFailReason.NotAuthorized
                 );
             }
             response.'404' = { resp ->
                 throw new StepException(
                         "App '/not_existent' does not exist",
-                        e,
                         MesosFailReason.AppNotExists
                 );
             }
             response.failure = { resp, json ->
                 throw new StepException(
                         "Put app on mesos service error",
-                        e,
                         MesosFailReason.requestFailed
                 );
             }
@@ -130,35 +120,30 @@ class RestClientUtils {
             response.'401' = { resp ->
                 throw new StepException(
                         "Invalid username or password.",
-                        e,
                         MesosFailReason.InvalidUser
                 );
             }
             response.'403' = { resp ->
                 throw new StepException(
                         "Not Authorized to perform this action!",
-                        e,
                         MesosFailReason.NotAuthorized
                 );
             }
             response.'404' = { resp ->
                 throw new StepException(
                         "App '/not_existent' does not exist",
-                        e,
                         MesosFailReason.AppNotExists
                 );
             }
             response.'409' = { resp ->
                 throw new StepException(
                         "App is locked by one or more deployments. Override with the option '?force=true'. View details at '/v2/deployments/<DEPLOYMENT_ID>'.",
-                        e,
                         MesosFailReason.AppAlreadyExists
                 );
             }
             response.failure = { resp, json ->
                 throw new StepException(
                         "Put app on mesos service error",
-                        e,
                         MesosFailReason.requestFailed
                 );
             }
