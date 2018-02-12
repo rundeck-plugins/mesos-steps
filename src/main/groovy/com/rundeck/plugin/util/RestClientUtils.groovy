@@ -3,6 +3,7 @@ package com.rundeck.plugin.util
 import com.dtolabs.rundeck.core.execution.workflow.steps.StepException
 import com.dtolabs.rundeck.plugins.step.PluginStepContext
 import com.rundeck.plugin.MesosFailReason
+import groovy.json.JsonOutput
 import groovyx.net.http.ContentType
 import groovyx.net.http.HTTPBuilder
 import groovyx.net.http.Method
@@ -14,12 +15,12 @@ class RestClientUtils {
     public static final String URI_PATH = "/v2/apps/"
     public static final String URI_TASKS = '/tasks'
 
-    public static putApp(String mesosServiceApiURL, String appId, Map properties, PluginStepContext context){
+    public static putApp(String mesosServiceApiURL, String appId, Map properties, Map queryParams, PluginStepContext context){
         def serviceAPI = new HTTPBuilder(mesosServiceApiURL)
         serviceAPI.request(Method.PUT, ContentType.JSON){ req ->
             uri.path = URI_PATH + appId
-            uri.query = [format:'json']
-            body = properties
+            uri.query = queryParams.findAll {it.value}
+            body = JsonOutput.toJson(properties)
 
             response.success = { resp, json ->
                 assert [200, 201].contains(resp.status)

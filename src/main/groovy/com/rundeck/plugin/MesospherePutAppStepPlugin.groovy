@@ -5,9 +5,15 @@ import com.dtolabs.rundeck.core.plugins.Plugin
 import com.dtolabs.rundeck.plugins.ServiceNameConstants
 import com.dtolabs.rundeck.plugins.descriptions.PluginDescription
 import com.dtolabs.rundeck.plugins.descriptions.PluginProperty
+import com.dtolabs.rundeck.plugins.descriptions.RenderingOption
+import com.dtolabs.rundeck.plugins.descriptions.RenderingOptions
 import com.dtolabs.rundeck.plugins.step.PluginStepContext
 import com.dtolabs.rundeck.plugins.step.StepPlugin
 import com.rundeck.plugin.util.RestClientUtils
+import groovy.json.JsonSlurper
+
+import static com.dtolabs.rundeck.core.plugins.configuration.StringRenderingConstants.CODE_SYNTAX_MODE
+import static com.dtolabs.rundeck.core.plugins.configuration.StringRenderingConstants.DISPLAY_TYPE_KEY
 
 /**
  * Created by carlos on 29/12/17.
@@ -27,6 +33,17 @@ public class MesospherePutAppStepPlugin implements StepPlugin {
             description = "App Id to PUT on Mesos service."
     )
     String id
+
+    @PluginProperty(title = "Force",
+            description = "Only one deployment can be applied to one application at the same time. If the existing deployment should be canceled by this change, you can set force=true."
+    )
+    boolean force
+
+    @PluginProperty(title = "Partial Update",
+            defaultValue = "true",
+            description = "Without specifying this parameter, all values that are not defined in the json, will not change existing values."
+    )
+    boolean partialUpdate
 
     @PluginProperty(title = "Backoff Factor",
             description = "Configures exponential backoff behavior when launching potentially sick apps."
@@ -79,6 +96,28 @@ public class MesospherePutAppStepPlugin implements StepPlugin {
     )
     Integer maxLaunchDelaySeconds
 
+    @PluginProperty(title = "Container",
+            description = "App Container"
+    )
+    @RenderingOptions(
+            [
+                    @RenderingOption(key = DISPLAY_TYPE_KEY, value = "CODE"),
+                    @RenderingOption(key = CODE_SYNTAX_MODE, value = "json")
+            ]
+    )
+    String container
+
+    @PluginProperty(title = "Health Checks",
+            description = "App Health Checks"
+    )
+    @RenderingOptions(
+            [
+                    @RenderingOption(key = DISPLAY_TYPE_KEY, value = "CODE"),
+                    @RenderingOption(key = CODE_SYNTAX_MODE, value = "json")
+            ]
+    )
+    String healthChecks
+
     @PluginProperty(title = "Memory",
             description = "The amount of memory in MB that is needed for the application per instance."
     )
@@ -91,6 +130,12 @@ public class MesospherePutAppStepPlugin implements StepPlugin {
 
     @PluginProperty(title = "Port Definitions",
             description = "An array of required port resources on the agent host."
+    )
+    @RenderingOptions(
+            [
+                    @RenderingOption(key = DISPLAY_TYPE_KEY, value = "CODE"),
+                    @RenderingOption(key = CODE_SYNTAX_MODE, value = "json")
+            ]
     )
     String portDefinitions
 
@@ -137,6 +182,12 @@ public class MesospherePutAppStepPlugin implements StepPlugin {
     @PluginProperty(title = "Upgrade Strategy",
             description = ""
     )
+    @RenderingOptions(
+            [
+                @RenderingOption(key = DISPLAY_TYPE_KEY, value = "CODE"),
+                @RenderingOption(key = CODE_SYNTAX_MODE, value = "json")
+            ]
+    )
     String upgradeStrategy
 
     @PluginProperty(title = "URIs",
@@ -161,16 +212,26 @@ public class MesospherePutAppStepPlugin implements StepPlugin {
 
     @Override
     void executeStep(PluginStepContext context, Map<String, Object> configuration) throws StepException {
-        RestClientUtils.putApp(mesosServiceApiURL, id, getMapPropertiesToRequest(), context)
+        try{
+            RestClientUtils.putApp(mesosServiceApiURL, id, getMapPropertiesToRequest(),
+                    [force: force, partialUpdate: partialUpdate], context)
+        } catch (Exception e){
+            println(e.printStackTrace())
+            throw new StepException(e.message, e, MesosFailReason.requestFailed)
+        }
     }
 
     private Map getMapPropertiesToRequest(){
         Map propertiesToRequest = [:]
-        Map propWithValues = this.properties.findAll {it.value && !['class', 'mesosServiceApiURL'].contains(it.key)}
+        Map propWithValues = this.properties.findAll {it.value &&
+                !['class', 'mesosServiceApiURL', 'force', 'partialUpdate', 'mapPropertiesToRequest'].contains(it.key)}
 
         propWithValues.each { p ->
             def value = p.value
-            if(p.value instanceof String && p.value.contains(',')){
+            if(["container", "healthChecks", "portDefinitions", "upgradeStrategy"].contains(p.key)){
+                def slurper = new JsonSlurper()
+                propertiesToRequest.put(p.key, slurper.parseText(value))
+            } else if(p.value instanceof String && p.value.contains(',')){
                 propertiesToRequest.put(p.key, value.split(","))
             } else {
                 propertiesToRequest.put(p.key, value)
