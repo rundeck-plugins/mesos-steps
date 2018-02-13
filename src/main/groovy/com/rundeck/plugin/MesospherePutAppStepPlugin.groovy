@@ -56,7 +56,6 @@ public class MesospherePutAppStepPlugin implements StepPlugin {
     Integer backoffSeconds
 
     @PluginProperty(title = "Command",
-            required = true,
             description = "The command that is executed.  This value is wrapped by Mesos via /bin/sh -c \${app.cmd}"
     )
     String cmd
