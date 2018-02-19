@@ -150,4 +150,49 @@ class RestClientUtils {
             }
         }
     }
+
+    public static deleteApp(String mesosServiceApiURL, String appId, Map queryParams, PluginStepContext context){
+        def serviceAPI = new HTTPBuilder(mesosServiceApiURL)
+        serviceAPI.request(Method.DELETE, ContentType.JSON){ req ->
+            uri.path = URI_PATH + appId
+            uri.query = queryParams.findAll {it.value}
+
+            response.success = { resp, json ->
+                assert [200].contains(resp.status)
+                HashMap<String, String> meta = new HashMap<>();
+                meta.put("content-data-type", "application/json");
+                context.getExecutionContext().getExecutionListener().event("log", json.toString(), meta);
+            }
+            response.'401' = { resp ->
+                throw new StepException(
+                        "Invalid username or password.",
+                        MesosFailReason.InvalidUser
+                );
+            }
+            response.'403' = { resp ->
+                throw new StepException(
+                        "Not Authorized to perform this action!",
+                        MesosFailReason.NotAuthorized
+                );
+            }
+            response.'404' = { resp ->
+                throw new StepException(
+                        "App '/not_existent' does not exist",
+                        MesosFailReason.AppNotExists
+                );
+            }
+            response.'409' = { resp ->
+                throw new StepException(
+                        "App is locked by one or more deployments. Override with the option '?force=true'. View details at '/v2/deployments/<DEPLOYMENT_ID>'.",
+                        MesosFailReason.AppAlreadyExists
+                );
+            }
+            response.failure = { resp, json ->
+                throw new StepException(
+                        "Put app on mesos service error",
+                        MesosFailReason.requestFailed
+                );
+            }
+        }
+    }
 }
