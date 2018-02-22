@@ -212,7 +212,7 @@ public class MesospherePutAppStepPlugin implements StepPlugin {
     @Override
     void executeStep(PluginStepContext context, Map<String, Object> configuration) throws StepException {
         try{
-            RestClientUtils.putApp(mesosServiceApiURL, id, getMapPropertiesToRequest(),
+            RestClientUtils.putApp(mesosServiceApiURL, id, createMapPropertiesToRequest(),
                     [force: force, partialUpdate: partialUpdate], context)
         } catch (Exception e){
             println(e.printStackTrace())
@@ -220,7 +220,7 @@ public class MesospherePutAppStepPlugin implements StepPlugin {
         }
     }
 
-    private Map getMapPropertiesToRequest(){
+    private Map createMapPropertiesToRequest(){
         Map propertiesToRequest = [:]
         Map propWithValues = this.properties.findAll {it.value &&
                 !['class', 'mesosServiceApiURL', 'force', 'partialUpdate', 'mapPropertiesToRequest'].contains(it.key)}
@@ -229,7 +229,7 @@ public class MesospherePutAppStepPlugin implements StepPlugin {
             def value = p.value
             if(["container", "healthChecks", "portDefinitions", "upgradeStrategy"].contains(p.key)){
                 def slurper = new JsonSlurper()
-                propertiesToRequest.put(p.key, slurper.parseText(value))
+                propertiesToRequest.put(p.key, slurper.parseText(value?.toString()))
             } else if(p.value instanceof String && p.value.contains(',')){
                 propertiesToRequest.put(p.key, value.split(","))
             } else {
