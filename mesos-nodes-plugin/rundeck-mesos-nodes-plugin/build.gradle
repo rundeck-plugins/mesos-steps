@@ -1,0 +1,95 @@
+buildscript {
+    repositories {
+        mavenCentral()
+        maven { url "https://oss.sonatype.org/content/groups/public"}
+    }
+}
+
+plugins {
+    id 'pl.allegro.tech.build.axion-release' version '1.3.2'
+}
+
+apply plugin: 'java'
+apply plugin: 'idea'
+apply plugin: 'groovy'
+apply plugin: 'pl.allegro.tech.build.axion-release'
+
+sourceCompatibility = 1.7
+targetCompatibility = 1.7
+
+defaultTasks 'clean', 'build'
+ext.rundeckPluginVersion = '1.1'
+
+configurations {
+    //declare custom pluginLibs configuration to include only libs for this plugin
+    pluginLibs
+
+    //declare compile to extend from pluginLibs so it inherits the dependencies
+    compile  {
+        extendsFrom pluginLibs
+    }
+}
+scmVersion {
+    tag {
+        prefix = 'v'
+        versionSeparator = ''
+        def origDeserialize=deserialize
+        //apend .0 to satisfy semver if the tag version is only X.Y
+        deserialize = { config, position, tagName ->
+            def orig = origDeserialize(config, position, tagName)
+            if (orig.split('\\.').length < 3) {
+                orig += ".0"
+            }
+            orig
+        }
+    }
+}
+project.version = scmVersion.version
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile group: 'org.rundeck', name: 'rundeck-core', version: '1.5'
+
+    pluginLibs group: 'org.apache.commons', name: 'commons-lang3', version: '3.4'
+    pluginLibs group: 'commons-beanutils', name: 'commons-beanutils', version: '1.9.2'
+
+    pluginLibs group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.1'
+    pluginLibs group: 'org.apache.httpcomponents', name:  'httpcore', version:'4.4.5'
+    pluginLibs group: 'org.apache.httpcomponents', name: 'httpmime', version: '4.5.1'
+    pluginLibs group: 'com.google.code.gson', name: 'gson', version: '2.3.1'
+    pluginLibs group: 'com.google.guava', name: 'guava', version: '18.0'
+    pluginLibs group: 'com.codahale.metrics', name: 'metrics-core', version: '3.0.1'
+
+    testCompile group: 'junit', name:'junit', version: '4.12'
+    testCompile "org.codehaus.groovy:groovy-all:2.3.7"
+    testCompile "org.spockframework:spock-core:0.7-groovy-2.0"
+}
+
+// task to copy plugin libs to output/lib dir
+task copyToLib(type: Copy) {
+    into "$buildDir/output/lib"
+    from configurations.pluginLibs
+}
+
+jar {
+    from "$buildDir/output"
+    manifest {
+        def libList = configurations.pluginLibs.collect{'lib/'+it.name}.join(' ')
+        attributes(
+                "Rundeck-Plugin-Version": rundeckPluginVersion,
+                "Rundeck-Plugin-File-Version": version,
+                "Rundeck-Plugin-Archive": "true",
+                "Rundeck-Plugin-Classnames": "com.rundeck.plugin.resources.mesos.ResourceModelFactory",
+                "Rundeck-Plugin-Libs": "${libList}"
+        )
+    }
+}
+
+jar.dependsOn copyToLib
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '2.11'
+}
