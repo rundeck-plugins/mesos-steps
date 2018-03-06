@@ -1,5 +1,6 @@
 package com.rundeck.plugin.util
 
+import com.dtolabs.rundeck.core.Constants
 import com.dtolabs.rundeck.core.execution.workflow.steps.StepException
 import com.dtolabs.rundeck.plugins.step.PluginStepContext
 import com.rundeck.plugin.MesosFailReason
@@ -26,7 +27,12 @@ class RestClientUtils {
                 assert [200, 201].contains(resp.status)
                 HashMap<String, String> meta = new HashMap<>();
                 meta.put("content-data-type", "application/json");
-                context.getExecutionContext().getExecutionListener().event("log", json.toString(), meta);
+                getTaskApp(mesosServiceApiURL, appId, context, true)
+
+                //TODO: test this
+//                ProjectNodeService nodeService = context.getExecutionContext().getNodeService();
+//                nodeService.refreshProjectNodes(context.getFrameworkProject());
+                context.getExecutionContext().getExecutionListener().log(Constants.INFO_LEVEL, json.toString());
             }
             response.'400' = { resp ->
                 throw new StepException(
@@ -67,7 +73,8 @@ class RestClientUtils {
         }
     }
 
-    public static getTaskApp(String mesosServiceApiURL, String appId, PluginStepContext context){
+    public static getTaskApp(String mesosServiceApiURL, String appId, PluginStepContext context,
+                             boolean verifyTasksRunning = false, int limitCalls = 10, int calls = 0, int logLevel = Constants.INFO_LEVEL){
         def serviceAPI = new HTTPBuilder(mesosServiceApiURL)
         serviceAPI.request(Method.GET, ContentType.JSON){ req ->
             uri.path = URI_PATH + appId + URI_TASKS
@@ -77,7 +84,17 @@ class RestClientUtils {
                 assert [200].contains(resp.status)
                 HashMap<String, String> meta = new HashMap<>();
                 meta.put("content-data-type", "application/json");
-                context.getExecutionContext().getExecutionListener().event("log", json.toString(), meta);
+                List tasks = json.tasks
+                tasks.each {Map task ->
+                    if(task.state != "TASK_RUNNING" && calls < limitCalls){
+                        calls++;
+                        getTaskApp(mesosServiceApiURL, appId, context, true, calls, Constants.DEBUG_LEVEL)
+                    }
+                }
+                //TODO: test this
+//                ProjectNodeService nodeService = context.getExecutionContext().getNodeService();
+//                nodeService.refreshProjectNodes(context.getFrameworkProject());
+                context.getExecutionContext().getExecutionListener().log(logLevel, json.toString())
             }
             response.'401' = { resp ->
                 throw new StepException(
@@ -116,7 +133,7 @@ class RestClientUtils {
                 assert [200].contains(resp.status)
                 HashMap<String, String> meta = new HashMap<>();
                 meta.put("content-data-type", "application/json");
-                context.getExecutionContext().getExecutionListener().event("log", json.toString(), meta);
+                context.getExecutionContext().getExecutionListener().log(Constants.INFO_LEVEL, json.toString());
             }
             response.'401' = { resp ->
                 throw new StepException(
