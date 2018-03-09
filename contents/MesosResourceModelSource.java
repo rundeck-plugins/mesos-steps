@@ -1,11 +1,8 @@
-package com.rundeck.plugin.resources.mesos;
-
 import com.dtolabs.rundeck.core.common.INodeSet;
 import com.dtolabs.rundeck.core.common.NodeEntryImpl;
 import com.dtolabs.rundeck.core.common.NodeSetImpl;
 import com.dtolabs.rundeck.core.resources.ResourceModelSource;
 import com.dtolabs.rundeck.core.resources.ResourceModelSourceException;
-import com.rundeck.plugin.resources.mesos.client.MesosNode;
 
 import java.util.*;
 

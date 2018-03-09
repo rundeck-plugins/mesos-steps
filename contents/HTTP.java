@@ -1,4 +1,3 @@
-package com.rundeck.plugin.resources.mesos.client;
 
 import com.google.common.base.Function;
 

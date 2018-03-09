@@ -1,5 +1,3 @@
-package com.rundeck.plugin
-
 import com.dtolabs.rundeck.core.execution.workflow.steps.FailureReason
 
 public enum MesosFailReason implements FailureReason {

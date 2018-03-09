@@ -1,5 +1,3 @@
-package com.rundeck.plugin.resources.mesos.client;
-
 import com.google.gson.Gson;
 import org.apache.log4j.Logger;
 

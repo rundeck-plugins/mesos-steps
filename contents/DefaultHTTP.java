@@ -1,5 +1,3 @@
-package com.rundeck.plugin.resources.mesos.client;
-
 import com.codahale.metrics.MetricRegistry;
 import com.google.common.base.Function;
 import com.google.gson.Gson;

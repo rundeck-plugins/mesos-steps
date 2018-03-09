@@ -1,0 +1,64 @@
+<joblist>
+  <job>
+    <description></description>
+    <dispatch>
+      <excludePrecedence>true</excludePrecedence>
+      <keepgoing>true</keepgoing>
+      <rankOrder>ascending</rankOrder>
+      <successOnEmptyNodeFilter>false</successOnEmptyNodeFilter>
+      <threadcount>1</threadcount>
+    </dispatch>
+    <executionEnabled>true</executionEnabled>
+    <id>b73202fb-8233-4e3a-a423-6d545fcb39b4</id>
+    <loglevel>INFO</loglevel>
+    <name>Test Mesos Complete Simplest</name>
+    <nodeFilterEditable>true</nodeFilterEditable>
+    <nodefilters>
+      <filter>tags: /test/test-sshd</filter>
+    </nodefilters>
+    <nodesSelectedByDefault>true</nodesSelectedByDefault>
+    <scheduleEnabled>true</scheduleEnabled>
+    <sequence keepgoing='false' strategy='sequential'>
+      <command>
+        <step-plugin type='mesos-put-app-step'>
+          <configuration>
+            <entry key='container' value='{&#10;&#09;"type": "DOCKER",&#10;&#09;"volumes": [],&#10;&#09;"docker": {&#10;&#09;&#09;"image": "auchida/ubuntu-sshd",&#10;&#09;&#09;"network": "BRIDGE",&#10;&#09;&#09;"portMappings": [{&#10;&#09;&#09;&#09;"containerPort": 22,&#10;&#09;&#09;&#09;"hostPort": 31807,&#10;&#09;&#09;&#09;"servicePort": 10000,&#10;&#09;&#09;&#09;"protocol": "tcp",&#10;&#09;&#09;&#09;"labels": {}&#10;&#09;&#09;}],&#10;&#09;&#09;"privileged": true,&#10;&#09;&#09;"parameters": [],&#10;&#09;&#09;"forcePullImage": true&#10;&#09;}&#10;}' />
+            <entry key='cpus' value='1' />
+            <entry key='disk' value='0' />
+            <entry key='force' value='false' />
+            <entry key='healthChecks' value='[{&#10; &#09;"protocol": "COMMAND",&#10; &#09;"command": {&#10; &#09;&#09;"value": "bash -c \"echo 0; exit $?\""&#10;&#10; &#09;},&#10; &#09;"gracePeriodSeconds": 300,&#10; &#09;"intervalSeconds": 60,&#10; &#09;"timeoutSeconds": 20,&#10; &#09;"maxConsecutiveFailures": 3,&#10; &#09;"ignoreHttp1xx": false&#10;}]' />
+            <entry key='id' value='/test/test-sshd' />
+            <entry key='mem' value='128' />
+            <entry key='mesosServiceApiURL' value='{IP_MESOS_SERVICE}' />
+            <entry key='partialUpdate' value='true' />
+            <entry key='portDefinitions' value='[&#10;    {&#10;      "port": 10000,&#10;      "protocol": "tcp",&#10;      "labels": {}&#10;    }&#10;]' />
+            <entry key='requirePorts' value='false' />
+            <entry key='tty' value='false' />
+          </configuration>
+        </step-plugin>
+      </command>
+      <command>
+        <errorhandler>
+          <step-plugin type='mesos-delete-app-step'>
+            <configuration>
+              <entry key='force' value='true' />
+              <entry key='id' value='/test/test-sshd' />
+              <entry key='mesosServiceApiURL' value='{IP_MESOS_SERVICE}' />
+            </configuration>
+          </step-plugin>
+        </errorhandler>
+        <jobref name='connect to node' />
+      </command>
+      <command>
+        <step-plugin type='mesos-delete-app-step'>
+          <configuration>
+            <entry key='force' value='true' />
+            <entry key='id' value='/test/test-sshd' />
+            <entry key='mesosServiceApiURL' value='{IP_MESOS_SERVICE}' />
+          </configuration>
+        </step-plugin>
+      </command>
+    </sequence>
+    <uuid>b73202fb-8233-4e3a-a423-6d545fcb39b4</uuid>
+  </job>
+</joblist>

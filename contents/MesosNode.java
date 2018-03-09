@@ -1,4 +1,3 @@
-package com.rundeck.plugin.resources.mesos.client;
 
 import java.util.List;
 

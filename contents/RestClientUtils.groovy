@@ -1,10 +1,8 @@
-package com.rundeck.plugin.util
-
 import com.dtolabs.rundeck.core.Constants
 import com.dtolabs.rundeck.core.execution.workflow.steps.StepException
 import com.dtolabs.rundeck.core.nodes.ProjectNodeService
 import com.dtolabs.rundeck.plugins.step.PluginStepContext
-import com.rundeck.plugin.MesosFailReason
+import MesosFailReason
 import groovy.json.JsonOutput
 import groovyx.net.http.ContentType
 import groovyx.net.http.HTTPBuilder

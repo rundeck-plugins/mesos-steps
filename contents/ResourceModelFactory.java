@@ -1,5 +1,3 @@
-package com.rundeck.plugin.resources.mesos;
-
 import com.codahale.metrics.MetricRegistry;
 import com.dtolabs.rundeck.core.common.Framework;
 import com.dtolabs.rundeck.core.plugins.Plugin;
@@ -11,9 +9,6 @@ import com.dtolabs.rundeck.core.resources.ResourceModelSource;
 import com.dtolabs.rundeck.core.resources.ResourceModelSourceFactory;
 import com.dtolabs.rundeck.plugins.ServiceNameConstants;
 import com.dtolabs.rundeck.plugins.util.DescriptionBuilder;
-import com.rundeck.plugin.resources.mesos.client.DefaultHTTP;
-import com.rundeck.plugin.resources.mesos.client.MesosAPI;
-import com.rundeck.plugin.resources.mesos.client.MesosNode;
 
 import java.util.Properties;
 
