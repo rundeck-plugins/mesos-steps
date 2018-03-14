@@ -14,11 +14,17 @@ public class MesosResourceModelSource implements ResourceModelSource {
 
     private String nodeHostname;
     private String nodeUsername;
+    private String sshPass;
+    private String sshStoragePath;
+    private String extraTags;
     private List<MesosNode> mesosNodeList;
 
-    public MesosResourceModelSource(String nodeHostname, String nodeUsername, List<MesosNode> mesosNodeList) {
+    public MesosResourceModelSource(String nodeHostname, String nodeUsername, String sshPass, String sshStoragePath, String extraTags, List<MesosNode> mesosNodeList) {
         this.nodeHostname = nodeHostname;
         this.nodeUsername = nodeUsername;
+        this.sshPass = sshPass;
+        this.sshStoragePath = sshStoragePath;
+        this.extraTags = extraTags;
         this.mesosNodeList = mesosNodeList;
     }
 
@@ -40,6 +46,10 @@ public class MesosResourceModelSource implements ResourceModelSource {
         nodeEntry.setTags(createTags(appId));
         nodeEntry.setHostname(nodeHostname + ":" + nodePort);
         nodeEntry.setUsername(nodeUsername);
+        nodeEntry.setAttribute("ssh-authentication", "password");
+        nodeEntry.setAttribute("ssh-password-option", this.sshPass);
+        nodeEntry.setAttribute("ssh-password-storage-path", this.sshStoragePath);
+        nodeEntry.setAttribute("tags", this.extraTags);
 
         return nodeEntry;
     }

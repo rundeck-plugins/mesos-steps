@@ -10,6 +10,7 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.apache.log4j.Logger;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import static java.lang.String.format;
@@ -71,10 +72,10 @@ public class DefaultHTTP implements HTTP {
 
             final String responseBody = EntityUtils.toString(response.getEntity());
 
-//            return parser.apply(responseBody);
             Gson gson = new GsonBuilder().create();
             MesosTasks p = gson.fromJson(responseBody, MesosTasks.class);
-            return p.getTasks();
+            List<MesosNode> mesosNodeList = p.getTasks();
+            return mesosNodeList != null ? mesosNodeList : new ArrayList<MesosNode>();
         } catch (final IOException ex) {
             errorsCounter();
             LOG.warn(name + " exception while trying to request mesos API: " + ex.getMessage(), ex);

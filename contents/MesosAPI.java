@@ -24,6 +24,5 @@ public class MesosAPI {
     public List<MesosNode> getNodes(final String userQuery) {
         final String path = "v2/tasks";
         return http.makeRequest(path, "", "getNodes()");
-//        return new ArrayList();
     }
 }
