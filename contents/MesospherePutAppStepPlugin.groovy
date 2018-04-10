@@ -10,6 +10,7 @@ import com.dtolabs.rundeck.plugins.descriptions.RenderingOptions
 import com.dtolabs.rundeck.plugins.step.PluginStepContext
 import com.dtolabs.rundeck.plugins.step.StepPlugin
 import groovy.json.JsonSlurper
+import org.apache.log4j.Logger
 
 import static com.dtolabs.rundeck.core.plugins.configuration.StringRenderingConstants.CODE_SYNTAX_MODE
 import static com.dtolabs.rundeck.core.plugins.configuration.StringRenderingConstants.DISPLAY_TYPE_KEY
@@ -22,11 +23,17 @@ import static com.dtolabs.rundeck.core.plugins.configuration.StringRenderingCons
         description = "Change multiple applications either by upgrading existing ones or creating new ones.")
 public class MesospherePutAppStepPlugin implements StepPlugin {
     public static final String PROVIDER_NAME = "mesos-put-app-step";
+    public static final Logger logger = Logger.getLogger(MesospherePutAppStepPlugin.class)
 
-    @PluginProperty(title = "Mesos Service Api URL", required = true,
+    @PluginProperty(title = "Mesos Service Api URL", required = false,
             description = "Address to access mesos service api."
     )
     String mesosServiceApiURL
+
+    @PluginProperty(title = "Api Token", required = false,
+            description = "Api Token to Access DC/OS"
+    )
+    String apiToken
 
     @PluginProperty(title = "App Id", required = true,
             description = "App Id to PUT on Mesos service."
@@ -210,19 +217,21 @@ public class MesospherePutAppStepPlugin implements StepPlugin {
 
     @Override
     void executeStep(PluginStepContext context, Map<String, Object> configuration) throws StepException {
-        try{
-            RestClientUtils.putApp(mesosServiceApiURL, id, createMapPropertiesToRequest(),
-                    [force: force, partialUpdate: partialUpdate], context)
-        } catch (Exception e){
-            println(e.printStackTrace())
-            throw new StepException(e.message, e, MesosFailReason.requestFailed)
-        }
+        logger.info("Init execution step - Put App Step Plugin...")
+
+        String mesosApiHost = mesosServiceApiURL ?: ProjectPropertiesUtils.getMesosHostPortConfig(context)
+        String mesosApiToken = apiToken ?: ProjectPropertiesUtils.getMesosApiTokenConfig(context)
+
+        RestClientUtils.putApp(mesosApiHost, mesosApiToken, id, createMapPropertiesToRequest(),
+                [force: force, partialUpdate: partialUpdate], context)
+        logger.info("End execution step - Put App Step Plugin...")
     }
 
     private Map createMapPropertiesToRequest(){
+        logger.info("Setting map properties to request...")
         Map propertiesToRequest = [:]
         Map propWithValues = this.properties.findAll {it.value &&
-                !['class', 'mesosServiceApiURL', 'force', 'partialUpdate', 'mapPropertiesToRequest'].contains(it.key)}
+                !['class', 'mesosServiceApiURL', 'force', 'partialUpdate', 'mapPropertiesToRequest', 'apiToken'].contains(it.key)}
 
         propWithValues.each { p ->
             def value = p.value
@@ -236,6 +245,7 @@ public class MesospherePutAppStepPlugin implements StepPlugin {
             }
         }
 
+        logger.info("Map properties to request: ${propertiesToRequest}")
         propertiesToRequest
     }
 }

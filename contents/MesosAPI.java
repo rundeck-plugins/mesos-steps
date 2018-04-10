@@ -2,9 +2,9 @@ import com.google.gson.Gson;
 import org.apache.log4j.Logger;
 
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
+
+import static java.lang.String.format;
 
 /**
  * Created by carlos on 28/02/18.
@@ -21,8 +21,8 @@ public class MesosAPI {
         this.http = http;
     }
 
-    public List<MesosNode> getNodes(final String userQuery) {
-        final String path = "v2/tasks";
+    public List<MesosNode> getNodes(final String marathonContext) {
+        final String path = marathonContext != null ? format("%s/v2/tasks", marathonContext) : "v2/tasks";
         return http.makeRequest(path, "", "getNodes()");
     }
 }

@@ -5,6 +5,7 @@ import com.dtolabs.rundeck.plugins.descriptions.PluginDescription
 import com.dtolabs.rundeck.plugins.descriptions.PluginProperty
 import com.dtolabs.rundeck.plugins.step.PluginStepContext
 import com.dtolabs.rundeck.plugins.step.StepPlugin
+import org.apache.log4j.Logger
 
 /**
  * Created by carlos on 30/12/17.
@@ -14,11 +15,17 @@ import com.dtolabs.rundeck.plugins.step.StepPlugin
         description = "Kill tasks that belong to the application app_id")
 class MesosphereDeleteTasksStepPlugin implements StepPlugin{
     public static final String PROVIDER_NAME = "mesos-delete-tasks-step"
+    public static final Logger logger = Logger.getLogger(MesospherePutAppStepPlugin.class)
 
-    @PluginProperty(title = "Mesos Service Api URL", required = true,
+    @PluginProperty(title = "Mesos Service Api URL", required = false,
             description = "Address to access mesos service api."
     )
     String mesosServiceApiURL
+
+    @PluginProperty(title = "Api Token", required = false,
+            description = "Api Token to Access DC/OS"
+    )
+    String apiToken
 
     @PluginProperty(title = "App Id", required = true,
             description = "App Id on Mesos service."
@@ -47,7 +54,12 @@ class MesosphereDeleteTasksStepPlugin implements StepPlugin{
 
     @Override
     void executeStep(PluginStepContext context, Map<String, Object> configuration) throws StepException {
-        RestClientUtils.deleteTaskApp(mesosServiceApiURL, id,
+        logger.info("Init execution step - Delete Tast from App Step Plugin...")
+        String mesosApiHost = mesosServiceApiURL ?: ProjectPropertiesUtils.getMesosHostPortConfig(context)
+        String mesosApiToken = apiToken ?: ProjectPropertiesUtils.getMesosApiTokenConfig(context)
+
+        RestClientUtils.deleteTaskApp(mesosApiHost, mesosApiToken, id,
                 [force: force, host: host, scale: scale, wipe: wipe], context)
+        logger.info("End execution step - Delete Tast from App Step Plugin...")
     }
 }
