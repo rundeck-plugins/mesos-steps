@@ -1,4 +1,5 @@
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -10,7 +11,7 @@ public class MesosNode {
     private String appId;
 
     public List<Integer> getPorts() {
-        return ports;
+        return ports != null ? ports : new ArrayList<>();
     }
 
     public void setPorts(List<Integer> ports) {

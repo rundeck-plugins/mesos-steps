@@ -42,9 +42,11 @@ public class MesosResourceModelSource implements ResourceModelSource {
             throw new ResourceModelSourceException("The mesos node list is null");
         }
         for(MesosNode mesosNode : this.mesosNodeList){
-            logger.info("Iterating on port list...");
-            for(Integer portNum : mesosNode.getPorts()){
-                nodeSet.putNode(createNodeEntry(mesosNode.getAppId(), mesosNode.getHost(), portNum));
+            if(mesosNode != null){
+                logger.info("Iterating on port list...");
+                for(Integer portNum : mesosNode.getPorts()){
+                    nodeSet.putNode(createNodeEntry(mesosNode.getAppId(), mesosNode.getHost(), portNum));
+                }
             }
         }
         logger.info("NodeSet created");

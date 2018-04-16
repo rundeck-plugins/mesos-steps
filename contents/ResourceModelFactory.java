@@ -23,14 +23,14 @@ public class ResourceModelFactory implements ResourceModelSourceFactory, Describ
 
     private static MetricRegistry METRICS = new MetricRegistry();
 
-    static String PROPERTY_MESOS_HOST = "PROPERTY_MESOS_HOST";
-    static String PROPERTY_MESOS_PORT = "PROPERTY_MESOS_PORT";
-    static String PROPERTY_MESOS_API_CONTEXT = "PROPERTY_MESOS_API_CONTEXT";
-    static String PROPERTY_MESOS_USERNAME = "PROPERTY_MESOS_USERNAME";
-    static String PROPERTY_MESOS_SSH_PASSWORD = "PROPERTY_MESOS_SSH_PASSWORD";
-    static String PROPERTY_MESOS_SSH_STORAGE_PATH = "PROPERTY_MESOS_SSH_STORAGE_PATH";
-    static String PROPERTY_MESOS_EXTRA_TAG = "PROPERTY_MESOS_EXTRA_TAG";
-    static String PROPERTY_MESOS_API_TOKEN = "PROPERTY_MESOS_API_TOKEN";
+    static String PROPERTY_MESOS_HOST = "host";
+    static String PROPERTY_MESOS_PORT = "port";
+    static String PROPERTY_MESOS_API_CONTEXT = "api_context";
+    static String PROPERTY_MESOS_USERNAME = "username";
+    static String PROPERTY_MESOS_SSH_PASSWORD = "ssh_password";
+    static String PROPERTY_MESOS_SSH_STORAGE_PATH = "ssh_storage_path";
+    static String PROPERTY_MESOS_EXTRA_TAG = "extra_tag";
+    static String PROPERTY_MESOS_API_TOKEN = "api_token";
 
     public static Description DESC = null;
 

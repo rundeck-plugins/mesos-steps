@@ -1,4 +1,5 @@
 import com.dtolabs.rundeck.core.common.Framework;
+import com.dtolabs.rundeck.core.utils.PropertyLookupException;
 import com.dtolabs.rundeck.plugins.step.PluginStepContext;
 
 import static java.lang.String.format;
@@ -37,11 +38,19 @@ public class ProjectPropertiesUtils {
     }
 
     static String getValueOf(String name, PluginStepContext context){
-        return context.getFramework()
-                .getFrameworkProjectMgr().getFrameworkProject(context.getFrameworkProject()).getProperty(name);
+        try{
+            return context.getFramework()
+                    .getFrameworkProjectMgr().getFrameworkProject(context.getFrameworkProject()).getProperty(name);
+        } catch (PropertyLookupException e){
+            return null;
+        }
     }
 
     static String getValueOf(String name, Framework framework, String projectName){
-        return framework.getFrameworkProjectMgr().getFrameworkProject(projectName).getProperty(name);
+        try{
+            return framework.getFrameworkProjectMgr().getFrameworkProject(projectName).getProperty(name);
+        } catch (PropertyLookupException e){
+            return null;
+        }
     }
 }

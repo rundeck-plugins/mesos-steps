@@ -52,9 +52,10 @@ public class MesospherePutAppStepPlugin implements StepPlugin {
     boolean partialUpdate
 
     @PluginProperty(title = "Backoff Factor",
-            description = "Configures exponential backoff behavior when launching potentially sick apps."
+            description = "Configures exponential backoff behavior when launching potentially sick apps.",
+            validatorClass = FractionNumberValidator.class
     )
-    long backoffFactor
+    String backoffFactor
 
     @PluginProperty(title = "Backoff Seconds",
             description = "Configures exponential backoff behavior when launching potentially sick apps."
@@ -67,19 +68,21 @@ public class MesospherePutAppStepPlugin implements StepPlugin {
     String cmd
 
     @PluginProperty(title = "Cpu's",
-            description = "The number of CPU shares this application needs per instance. This number does not have to be integer, but can be a fraction."
+            description = "The number of CPU shares this application needs per instance. This number does not have to be integer, but can be a fraction.",
+            validatorClass = FractionNumberValidator.class
     )
-    long cpus
+    String cpus
 
     @PluginProperty(title = "Dependencies",
-            description = "The number of CPU shares this application needs per instance. This number does not have to be integer, but can be a fraction."
+            description = "A list of services upon which this application depends."
     )
     String dependencies
 
     @PluginProperty(title = "Disk",
-            description = "How much disk space is needed for this application. This number does not have to be an integer, but can be a fraction."
+            description = "How much disk space is needed for this application. This number does not have to be an integer, but can be a fraction.",
+            validatorClass = FractionNumberValidator.class
     )
-    long disk
+    String disk
 
     @PluginProperty(title = "Executor",
             description = "The executor to use to launch this application. The simplest one (and the one configured by default if none is given) is //cmd"
@@ -124,9 +127,10 @@ public class MesospherePutAppStepPlugin implements StepPlugin {
     String healthChecks
 
     @PluginProperty(title = "Memory",
-            description = "The amount of memory in MB that is needed for the application per instance."
+            description = "The amount of memory in MB that is needed for the application per instance.",
+            validatorClass = FractionNumberValidator.class
     )
-    long mem
+    String mem
 
     @PluginProperty(title = "Networks",
             description = ""
