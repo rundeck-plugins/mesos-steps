@@ -242,8 +242,10 @@ public class MesospherePutAppStepPlugin implements StepPlugin {
             if(["container", "healthChecks", "portDefinitions", "upgradeStrategy"].contains(p.key)){
                 def slurper = new JsonSlurper()
                 propertiesToRequest.put(p.key, slurper.parseText(value?.toString()))
-            } else if(p.value instanceof String && p.value.contains(',')){
+            } else if(p.value instanceof String && p.value.contains(',')) {
                 propertiesToRequest.put(p.key, value.split(","))
+            } else if(["mem", "cpus", "disk", "backoffFactor"].contains(p.key)){
+                propertiesToRequest.put(p.key, parseValuesToDouble(value))
             } else {
                 propertiesToRequest.put(p.key, value)
             }
@@ -251,5 +253,9 @@ public class MesospherePutAppStepPlugin implements StepPlugin {
 
         logger.info("Map properties to request: ${propertiesToRequest}")
         propertiesToRequest
+    }
+
+    private Double parseValuesToDouble(String value){
+        return value ? Double.parseDouble(value) : null
     }
 }
