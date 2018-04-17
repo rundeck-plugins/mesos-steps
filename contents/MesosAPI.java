@@ -22,7 +22,9 @@ public class MesosAPI {
     }
 
     public List<MesosNode> getNodes(final String marathonContext) {
-        final String path = marathonContext != null ? format("%s/v2/tasks", marathonContext) : "v2/tasks";
+        final String path = marathonContext != null && !marathonContext.isEmpty() ?
+                format("%s/v2/tasks", marathonContext) : "v2/tasks";
+
         return http.makeRequest(path, "", "getNodes()");
     }
 }

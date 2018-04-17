@@ -56,7 +56,7 @@ public class MesosResourceModelSource implements ResourceModelSource {
     private NodeEntryImpl createNodeEntry(String appId, String host, Integer nodePort){
         logger.info(
                 format("Creating a new NodeEntry: Name: %s, Host: %s, UserName: %s",
-                        (NODE_NAME + "_" + nodePort), host, nodeUsername));
+                        appId, host, nodeUsername));
 
         final NodeEntryImpl nodeEntry = newNodeTreeImpl();
         nodeEntry.setNodename(host + ":" + nodePort);

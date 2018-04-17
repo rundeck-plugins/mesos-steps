@@ -15,10 +15,11 @@ public class ProjectPropertiesUtils {
     }
 
     static String getMesosHostPortConfig(PluginStepContext context){
-        return format("%s:%s/%s",
+        String marathonContext = getValueOf(PROJECT_PROPERTY_API_CONTEXT, context);
+        return format("%s:%s%s",
                 getValueOf(PROJECT_PROPERTY_HOST, context),
                 getValueOf(PROJECT_PROPERTY_PORT, context),
-                getValueOf(PROJECT_PROPERTY_API_CONTEXT, context));
+                marathonContext != null && !marathonContext.isEmpty() ? "/" + marathonContext : "");
     }
 
     static String getMesosApiTokenConfig(Framework framework, String projectName){
@@ -42,7 +43,7 @@ public class ProjectPropertiesUtils {
             return context.getFramework()
                     .getFrameworkProjectMgr().getFrameworkProject(context.getFrameworkProject()).getProperty(name);
         } catch (PropertyLookupException e){
-            return null;
+            return "";
         }
     }
 
@@ -50,7 +51,7 @@ public class ProjectPropertiesUtils {
         try{
             return framework.getFrameworkProjectMgr().getFrameworkProject(projectName).getProperty(name);
         } catch (PropertyLookupException e){
-            return null;
+            return "";
         }
     }
 }
