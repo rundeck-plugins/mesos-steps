@@ -61,7 +61,7 @@ public class MesosResourceModelSource implements ResourceModelSource {
         final NodeEntryImpl nodeEntry = newNodeTreeImpl();
         nodeEntry.setNodename(host + ":" + nodePort);
         nodeEntry.setTags(createTags(appId));
-        nodeEntry.setHostname(host);
+        nodeEntry.setHostname(host + ":" + nodePort);
         nodeEntry.setUsername(nodeUsername);
         nodeEntry.setAttribute("ssh-authentication", "password");
         nodeEntry.setAttribute("ssh-password-option", this.sshPass);
