@@ -3,6 +3,7 @@ import com.dtolabs.rundeck.core.common.NodeEntryImpl;
 import com.dtolabs.rundeck.core.common.NodeSetImpl;
 import com.dtolabs.rundeck.core.resources.ResourceModelSource;
 import com.dtolabs.rundeck.core.resources.ResourceModelSourceException;
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 
 import java.util.*;
@@ -21,15 +22,18 @@ public class MesosResourceModelSource implements ResourceModelSource {
     private String sshPass;
     private String sshStoragePath;
     private String extraTags;
+    private String filterNodes;
     private List<MesosNode> mesosNodeList;
 
-    public MesosResourceModelSource(String nodeHostname, String nodeUsername, String sshPass, String sshStoragePath, String extraTags, List<MesosNode> mesosNodeList) {
+    public MesosResourceModelSource(String nodeHostname, String nodeUsername, String sshPass, String sshStoragePath,
+                                    String extraTags, String filter, List<MesosNode> mesosNodeList) {
         this.nodeHostname = nodeHostname;
         this.nodeUsername = nodeUsername;
         this.sshPass = sshPass;
         this.sshStoragePath = sshStoragePath;
         this.extraTags = extraTags;
         this.mesosNodeList = mesosNodeList;
+        this.filterNodes = filter;
     }
 
     @Override
@@ -42,7 +46,10 @@ public class MesosResourceModelSource implements ResourceModelSource {
             throw new ResourceModelSourceException("The mesos node list is null");
         }
         for(MesosNode mesosNode : this.mesosNodeList){
-            if(mesosNode != null){
+            boolean shouldBeANode = StringUtils.isBlank(this.filterNodes) ||
+                    mesosNode.getAppId().startsWith(this.filterNodes);
+
+            if(mesosNode != null && shouldBeANode){
                 logger.info("Iterating on port list...");
                 for(Integer portNum : mesosNode.getPorts()){
                     nodeSet.putNode(createNodeEntry(mesosNode.getAppId(), mesosNode.getHost(), portNum));

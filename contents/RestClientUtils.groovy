@@ -260,7 +260,10 @@ class RestClientUtils {
                 logger.info("Requisition returned status ${resp.status}")
                 assert [200].contains(resp.status)
                 HashMap<String, String> meta = new HashMap<>();
-                meta.put("content-data-type", "application/json");
+                meta.put("content-data-type", "application/json");;
+
+                refreshNodeSet(context)
+
                 logger.info("requisition finished with success. json response: ${json.toString()}")
                 context.getExecutionContext().getExecutionListener().event("log", json.toString(), meta);
             }

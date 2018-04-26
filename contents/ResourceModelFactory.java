@@ -31,6 +31,7 @@ public class ResourceModelFactory implements ResourceModelSourceFactory, Describ
     static String PROPERTY_MESOS_SSH_STORAGE_PATH = "ssh_storage_path";
     static String PROPERTY_MESOS_EXTRA_TAG = "extra_tag";
     static String PROPERTY_MESOS_API_TOKEN = "api_token";
+    static String PROPERTY_FILTER_NODE_PREFIX = "filter_node_prefix";
 
     public static Description DESC = null;
 
@@ -55,6 +56,7 @@ public class ResourceModelFactory implements ResourceModelSourceFactory, Describ
                 .property(PropertyUtil.string(PROPERTY_MESOS_SSH_STORAGE_PATH, "SSH Storage Path", "SSH Storage Path", false, null))
                 .property(PropertyUtil.string(PROPERTY_MESOS_EXTRA_TAG, "Extra tags", "Extra tags", false, null))
                 .property(PropertyUtil.string(PROPERTY_MESOS_API_TOKEN, "API TOKEN", "Mesos API Token to get nodes info", false, null))
+                .property(PropertyUtil.string(PROPERTY_FILTER_NODE_PREFIX, "Filter Node Prefix", "only retrieve the nodes for contexts that start with that and not show the rest of the nodes in mesos", false, null))
                 .build();
     }
 
@@ -79,6 +81,7 @@ public class ResourceModelFactory implements ResourceModelSourceFactory, Describ
                 configuration.getProperty(PROPERTY_MESOS_SSH_PASSWORD),
                 configuration.getProperty(PROPERTY_MESOS_SSH_STORAGE_PATH),
                 configuration.getProperty(PROPERTY_MESOS_EXTRA_TAG),
+                configuration.getProperty(PROPERTY_FILTER_NODE_PREFIX),
                 mesosNodeList);
     }
 
