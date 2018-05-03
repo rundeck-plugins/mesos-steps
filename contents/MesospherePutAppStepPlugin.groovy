@@ -29,26 +29,6 @@ public class MesospherePutAppStepPlugin implements StepPlugin {
     public static final String PROVIDER_NAME = "mesos-put-app-step";
     public static final Logger logger = Logger.getLogger(MesospherePutAppStepPlugin.class)
 
-    @PluginProperty(title = "Mesos Service Api URL", required = false,
-            description = "Address to access mesos service api."
-    )
-    @RenderingOptions(
-            [
-                @RenderingOption(key = GROUP_NAME, value = "Mesos Service Config")
-            ]
-    )
-    String mesosServiceApiURL
-
-    @PluginProperty(title = "Api Token", required = false,
-            description = "Api Token to Access DC/OS"
-    )
-    @RenderingOptions(
-            [
-                @RenderingOption(key = GROUP_NAME, value = "Mesos Service Config")
-            ]
-    )
-    String apiToken
-
     //Main properties
 
     @PluginProperty(title = "App Id", required = false,
@@ -107,6 +87,33 @@ public class MesospherePutAppStepPlugin implements StepPlugin {
     String container
 
     //END: Main properties
+
+    //Service Configs
+    @PluginProperty(title = "Mesos Service Api URL", required = false,
+            description = "Address to access mesos service api."
+    )
+    @RenderingOptions(
+            [
+                    @RenderingOption(key = GROUP_NAME, value = "Mesos Service Config"),
+                    @RenderingOption(key = GROUPING, value = "secondary")
+            ]
+    )
+    String mesosServiceApiURL
+
+    @PluginProperty(title = "Api Token", required = false,
+            description = "Api Token to Access DC/OS"
+    )
+    @RenderingOptions(
+            [
+                    @RenderingOption(key = GROUP_NAME, value = "Mesos Service Config"),
+                    @RenderingOption(key = GROUPING, value = "secondary")
+            ]
+    )
+    String apiToken
+
+    //END: Service config
+
+    //Advanced settings
 
     @PluginProperty(title = "Force",
             defaultValue = 'no',
@@ -509,7 +516,7 @@ public class MesospherePutAppStepPlugin implements StepPlugin {
         return value ? Double.parseDouble(value) : null
     }
 
-    private Double parseValuesToInteger(String value){
-        return value ? Integer.parseInteger(value) : null
+    private Integer parseValuesToInteger(String value){
+        return value ? Integer.parseInt(value) : null
     }
 }
