@@ -1,8 +1,10 @@
+import MesosFailReason
 import com.dtolabs.rundeck.core.Constants
+import com.dtolabs.rundeck.core.execution.ExecutionReference
 import com.dtolabs.rundeck.core.execution.workflow.steps.StepException
+import com.dtolabs.rundeck.core.jobs.JobService
 import com.dtolabs.rundeck.core.nodes.ProjectNodeService
 import com.dtolabs.rundeck.plugins.step.PluginStepContext
-import MesosFailReason
 import groovy.json.JsonOutput
 import groovyx.net.http.HTTPBuilder
 import groovyx.net.http.Method
@@ -143,6 +145,82 @@ class RestClientUtils {
                         }
                     }
                 }
+                refreshNodeSet(context)
+                logger.info("requisition finished with success. json response: ${json.toString()}")
+                if (showLog) context.getExecutionContext().getExecutionListener().log(Constants.INFO_LEVEL, json.toString())
+            }
+            response.'401' = { resp ->
+                logger.error("Requisition returned status ${resp.status} - Invalid username or password.")
+                throw new StepException(
+                        "Invalid username or password.",
+                        MesosFailReason.InvalidUser
+                );
+            }
+            response.'403' = { resp ->
+                logger.error("Requisition returned status ${resp.status} - Not Authorized to perform this action!")
+                throw new StepException(
+                        "Not Authorized to perform this action!",
+                        MesosFailReason.NotAuthorized
+                );
+            }
+            response.'404' = { resp ->
+                logger.error("Requisition returned status ${resp.status} - App does not exist")
+                throw new StepException(
+                        "App '/not_existent' does not exist",
+                        MesosFailReason.AppNotExists
+                );
+            }
+            response.failure = { resp, json ->
+                logger.error("Requisition returned status ${resp.status} - Put app on mesos service error")
+                throw new StepException(
+                        "Put app on mesos service error",
+                        MesosFailReason.requestFailed
+                );
+            }
+        }
+    }
+
+    public static doCleanup(
+            String mesosServiceApiURL, String apiToken, String jobUUID,
+            PluginStepContext context, boolean showLog = true) {
+        logger.info("Calling get tasks of an app on mesos service API...")
+        def serviceAPI = new HTTPBuilder(mesosServiceApiURL)
+        if (apiToken) {
+            Map headers = serviceAPI.getHeaders()
+            headers["Authorization"] = "token=${apiToken}"
+            headers['Accept'] = 'application/json'
+            headers["Content-Type"] = "application/json; charset=utf8"
+        }
+
+        serviceAPI.request(Method.GET, "application/json; charset=utf8") { req ->
+            logger.info("Mounting requisition...")
+
+            uri.path = uri.path + "/v2/tasks"
+            uri.query = [:]
+            response.success = { resp, json ->
+                logger.info("Requisition returned status ${resp.status}")
+                assert [200].contains(resp.status)
+                HashMap<String, String> meta = new HashMap<>();
+                meta.put("content-data-type", "application/json");
+                List tasks = json.tasks
+                List tasksFiltered = tasks.findAll {task ->
+                    task.appId?.contains(jobUUID)
+                }
+
+                JobService jobService = context.getExecutionContext().getJobService()
+                List<ExecutionReference> executionReferenceList = jobService.searchExecutions(
+                        "", context.frameworkProject, jobUUID, null, null)
+
+                tasksFiltered.each {taskToRemove ->
+                    ExecutionReference er = executionReferenceList.find {ExecutionReference executionReference ->
+                        ((String)taskToRemove.appId).contains(executionReference.id)
+                    }
+
+                    if(er && !er.status.equals("running")){
+                        deleteApp(mesosServiceApiURL, apiToken, taskToRemove.appId, [force: true], context)
+                    }
+                }
+
                 refreshNodeSet(context)
                 logger.info("requisition finished with success. json response: ${json.toString()}")
                 if (showLog) context.getExecutionContext().getExecutionListener().log(Constants.INFO_LEVEL, json.toString())
