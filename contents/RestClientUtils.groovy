@@ -181,7 +181,7 @@ class RestClientUtils {
     }
 
     public static doCleanup(
-            String mesosServiceApiURL, String apiToken, String jobUUID,
+            String mesosServiceApiURL, String apiToken, String finishedAfterFilter,
             PluginStepContext context, boolean showLog = true) {
         logger.info("Calling get tasks of an app on mesos service API...")
         def serviceAPI = new HTTPBuilder(mesosServiceApiURL)
@@ -203,22 +203,39 @@ class RestClientUtils {
                 HashMap<String, String> meta = new HashMap<>();
                 meta.put("content-data-type", "application/json");
                 List tasks = json.tasks
-                List tasksFiltered = tasks.findAll {task ->
-                    task.appId?.contains(jobUUID)
+
+                if(tasks.isEmpty()){
+                    if (showLog)
+                        context.getExecutionContext().getExecutionListener().log(
+                                Constants.INFO_LEVEL, "No tasks running")
+
+                    return;
                 }
 
                 JobService jobService = context.getExecutionContext().getJobService()
-                List<ExecutionReference> executionReferenceList = jobService.searchExecutions(
-                        "", context.frameworkProject, jobUUID, null, null)
+                List<ExecutionReference> executionReferenceList = jobService.queryExecutions(
+                        [project: context.frameworkProject, recentFilter:(finishedAfterFilter ?: "") ])?.result
 
-                tasksFiltered.each {taskToRemove ->
+                boolean hasExecutionMatched = false
+
+                tasks.each {taskToRemove ->
                     ExecutionReference er = executionReferenceList.find {ExecutionReference executionReference ->
                         ((String)taskToRemove.appId).contains(executionReference.id)
                     }
 
                     if(er && !er.status.equals("running")){
+                        hasExecutionMatched = true;
+                        logger.info("removing app with id: ${taskToRemove.appId}")
                         deleteApp(mesosServiceApiURL, apiToken, taskToRemove.appId, [force: true], context)
                     }
+                }
+
+                if(!hasExecutionMatched){
+                    if (showLog)
+                        context.getExecutionContext().getExecutionListener().log(
+                                Constants.INFO_LEVEL, "No executions matched in the specified period")
+
+                    return;
                 }
 
                 refreshNodeSet(context)
