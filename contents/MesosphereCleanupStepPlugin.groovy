@@ -29,7 +29,7 @@ class MesosphereCleanupStepPlugin implements StepPlugin {
     String apiToken
 
     @PluginProperty(title = "Finished in the last", required = false,
-            description = "Checks the finished executions at the time specified, i.e., '2d' means the last 2 days. Use a number with a unit like '120n', '2n', '2d'. The units should be: h, d, w, m, y, n and s as hours, days, weeks, months, years, minutes and seconds. If empty, it will verify all past executions."
+            description = "Checks the last finished executions at the time specified, i.e., '2d' means in the last 2 days. Use a number with a unit like '120n', '2n', '2d'. The units should be: h, d, w, m, y, n and s as hours, days, weeks, months, years, minutes and seconds. If empty, it will verify all past executions."
     )
     String finishedAfterFilter
 
