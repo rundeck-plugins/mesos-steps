@@ -212,6 +212,9 @@ class RestClientUtils {
                     return;
                 }
 
+                if (showLog) context.getExecutionContext().getExecutionListener().log(
+                        Constants.DEBUG_LEVEL, "Get tasks API output: ${json.toString()}")
+
                 JobService jobService = context.getExecutionContext().getJobService()
                 List<ExecutionReference> executionReferenceList = jobService.queryExecutions(
                         [project: context.frameworkProject, recentFilter:(finishedAfterFilter ?: "") ])?.result
@@ -220,13 +223,35 @@ class RestClientUtils {
 
                 tasks.each {taskToRemove ->
                     ExecutionReference er = executionReferenceList.find {ExecutionReference executionReference ->
-                        ((String)taskToRemove.appId).contains(executionReference.id)
+                        ((String)taskToRemove.appId).contains(
+                                "${executionReference.getJob().id}-${executionReference.id}")
                     }
+
+                    if (er && showLog) context.getExecutionContext().getExecutionListener().log(
+                            Constants.DEBUG_LEVEL, "Execution Id: #${er.id}")
 
                     if(er && !er.status.equals("running")){
                         hasExecutionMatched = true;
                         logger.info("removing app with id: ${taskToRemove.appId}")
-                        deleteApp(mesosServiceApiURL, apiToken, taskToRemove.appId, [force: true], context)
+
+                        if (showLog) context.getExecutionContext().getExecutionListener().log(
+                                Constants.DEBUG_LEVEL, "Delete call output:")
+
+                        deleteApp(mesosServiceApiURL, apiToken, taskToRemove.appId, [force: true], context,
+                                context.getExecutionContext().getLoglevel() == Constants.DEBUG_LEVEL)
+
+                        if (showLog) context.getExecutionContext().getExecutionListener().log(Constants.INFO_LEVEL,
+                                "AppID=${taskToRemove.appId}, state=${taskToRemove.state}, startedAt=" +
+                                        "${taskToRemove.startedAt}, host=${taskToRemove.host}, rundeck_exec_status=${er.status}, result=deleted")
+                    } else if(er.status.equals("running")){
+                        if (showLog) {
+                            context.getExecutionContext().getExecutionListener().log(Constants.INFO_LEVEL,
+                                "AppID=${taskToRemove.appId}, state=${taskToRemove.state}, startedAt=" +
+                                        "${taskToRemove.startedAt}, host=${taskToRemove.host}, rundeck_exec_status=${er.status}, result=skipped")
+
+                            context.getExecutionContext().getExecutionListener().log(
+                                    Constants.DEBUG_LEVEL, "Delete call skipped (Execution is running)")
+                        }
                     }
                 }
 
@@ -240,7 +265,6 @@ class RestClientUtils {
 
                 refreshNodeSet(context)
                 logger.info("requisition finished with success. json response: ${json.toString()}")
-                if (showLog) context.getExecutionContext().getExecutionListener().log(Constants.INFO_LEVEL, json.toString())
             }
             response.'401' = { resp ->
                 logger.error("Requisition returned status ${resp.status} - Invalid username or password.")
@@ -335,7 +359,7 @@ class RestClientUtils {
         }
     }
 
-    public static deleteApp(String mesosServiceApiURL, String apiToken, String appId, Map queryParams, PluginStepContext context) {
+    public static deleteApp(String mesosServiceApiURL, String apiToken, String appId, Map queryParams, PluginStepContext context, boolean showLog = true) {
         logger.info("Calling delete app on mesos service API...")
         HTTPBuilder serviceAPI = new HTTPBuilder(mesosServiceApiURL)
         if (apiToken) {
@@ -360,7 +384,7 @@ class RestClientUtils {
                 refreshNodeSet(context)
 
                 logger.info("requisition finished with success. json response: ${json.toString()}")
-                context.getExecutionContext().getExecutionListener().event("log", json.toString(), meta);
+                if (showLog) context.getExecutionContext().getExecutionListener().event("log", json.toString(), meta);
             }
             response.'401' = { resp ->
                 logger.error("Requisition returned status ${resp.status} - Invalid User")
