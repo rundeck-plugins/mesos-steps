@@ -198,8 +198,8 @@ class RestClientUtils {
             uri.path = uri.path + "/v2/tasks"
             uri.query = [:]
             response.success = { resp, json ->
-                logger.info("Requisition returned status ${resp.status}")
-                assert [200].contains(resp.status)
+                logger.info("Requisition returned status ${resp?.status}")
+                assert [200].contains(resp?.status)
                 HashMap<String, String> meta = new HashMap<>();
                 meta.put("content-data-type", "application/json");
                 List tasks = json.tasks
@@ -230,7 +230,7 @@ class RestClientUtils {
                     if (er && showLog) context.getExecutionContext().getExecutionListener().log(
                             Constants.DEBUG_LEVEL, "Execution Id: #${er.id}")
 
-                    if(er && !er.status.equals("running")){
+                    if(er && !er?.status?.equals("running")){
                         hasExecutionMatched = true;
                         logger.info("removing app with id: ${taskToRemove.appId}")
 
@@ -242,12 +242,12 @@ class RestClientUtils {
 
                         if (showLog) context.getExecutionContext().getExecutionListener().log(Constants.INFO_LEVEL,
                                 "AppID=${taskToRemove.appId}, state=${taskToRemove.state}, startedAt=" +
-                                        "${taskToRemove.startedAt}, host=${taskToRemove.host}, rundeck_exec_status=${er.status}, result=deleted")
-                    } else if(er.status.equals("running")){
+                                        "${taskToRemove.startedAt}, host=${taskToRemove.host}, rundeck_exec_status=${er?.status}, result=deleted")
+                    } else if(er && er?.status?.equals("running")){
                         if (showLog) {
                             context.getExecutionContext().getExecutionListener().log(Constants.INFO_LEVEL,
                                 "AppID=${taskToRemove.appId}, state=${taskToRemove.state}, startedAt=" +
-                                        "${taskToRemove.startedAt}, host=${taskToRemove.host}, rundeck_exec_status=${er.status}, result=skipped")
+                                        "${taskToRemove.startedAt}, host=${taskToRemove.host}, rundeck_exec_status=${er?.status}, result=skipped")
 
                             context.getExecutionContext().getExecutionListener().log(
                                     Constants.DEBUG_LEVEL, "Delete call skipped (Execution is running)")
@@ -267,28 +267,28 @@ class RestClientUtils {
                 logger.info("requisition finished with success. json response: ${json.toString()}")
             }
             response.'401' = { resp ->
-                logger.error("Requisition returned status ${resp.status} - Invalid username or password.")
+                logger.error("Requisition returned status ${resp?.status} - Invalid username or password.")
                 throw new StepException(
                         "Invalid username or password.",
                         MesosFailReason.InvalidUser
                 );
             }
             response.'403' = { resp ->
-                logger.error("Requisition returned status ${resp.status} - Not Authorized to perform this action!")
+                logger.error("Requisition returned status ${resp?.status} - Not Authorized to perform this action!")
                 throw new StepException(
                         "Not Authorized to perform this action!",
                         MesosFailReason.NotAuthorized
                 );
             }
             response.'404' = { resp ->
-                logger.error("Requisition returned status ${resp.status} - App does not exist")
+                logger.error("Requisition returned status ${resp?.status} - App does not exist")
                 throw new StepException(
                         "App '/not_existent' does not exist",
                         MesosFailReason.AppNotExists
                 );
             }
             response.failure = { resp, json ->
-                logger.error("Requisition returned status ${resp.status} - Put app on mesos service error")
+                logger.error("Requisition returned status ${resp?.status} - Put app on mesos service error")
                 throw new StepException(
                         "Put app on mesos service error",
                         MesosFailReason.requestFailed
