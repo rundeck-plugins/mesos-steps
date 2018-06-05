@@ -204,7 +204,7 @@ class RestClientUtils {
                 meta.put("content-data-type", "application/json");
                 List tasks = json.tasks
 
-                if(tasks.isEmpty()){
+                if(tasks?.isEmpty()){
                     if (showLog)
                         context.getExecutionContext().getExecutionListener().log(
                                 Constants.INFO_LEVEL, "No tasks running")
@@ -221,8 +221,8 @@ class RestClientUtils {
 
                 boolean hasExecutionMatched = false
 
-                tasks.each {taskToRemove ->
-                    ExecutionReference er = executionReferenceList.find {ExecutionReference executionReference ->
+                tasks?.each {taskToRemove ->
+                    ExecutionReference er = executionReferenceList?.find {ExecutionReference executionReference ->
                         ((String)taskToRemove.appId).contains(
                                 "${executionReference.getJob().id}-${executionReference.id}")
                     }
