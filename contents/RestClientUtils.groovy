@@ -224,7 +224,7 @@ class RestClientUtils {
                 tasks?.each {taskToRemove ->
                     ExecutionReference er = executionReferenceList?.find {ExecutionReference executionReference ->
                         ((String)taskToRemove.appId).contains(
-                                "${executionReference.getJob().id}-${executionReference.id}")
+                                "${context.frameworkProject?.toLowerCase()}-${executionReference.getJob().id}-${executionReference.id}")
                     }
 
                     if (er && showLog) context.getExecutionContext().getExecutionListener().log(

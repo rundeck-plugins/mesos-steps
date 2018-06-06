@@ -1,23 +1,14 @@
-
-
 import com.dtolabs.rundeck.core.execution.workflow.steps.StepException
 import com.dtolabs.rundeck.core.plugins.Plugin
 import com.dtolabs.rundeck.plugins.ServiceNameConstants
-import com.dtolabs.rundeck.plugins.descriptions.PluginDescription
-import com.dtolabs.rundeck.plugins.descriptions.PluginProperty
-import com.dtolabs.rundeck.plugins.descriptions.RenderingOption
-import com.dtolabs.rundeck.plugins.descriptions.RenderingOptions
-import com.dtolabs.rundeck.plugins.descriptions.SelectValues
+import com.dtolabs.rundeck.plugins.descriptions.*
 import com.dtolabs.rundeck.plugins.step.PluginStepContext
 import com.dtolabs.rundeck.plugins.step.StepPlugin
 import groovy.json.JsonSlurper
 import org.apache.commons.lang.StringUtils
 import org.apache.log4j.Logger
 
-import static com.dtolabs.rundeck.core.plugins.configuration.StringRenderingConstants.CODE_SYNTAX_MODE
-import static com.dtolabs.rundeck.core.plugins.configuration.StringRenderingConstants.DISPLAY_TYPE_KEY
-import static com.dtolabs.rundeck.core.plugins.configuration.StringRenderingConstants.GROUPING
-import static com.dtolabs.rundeck.core.plugins.configuration.StringRenderingConstants.GROUP_NAME
+import static com.dtolabs.rundeck.core.plugins.configuration.StringRenderingConstants.*
 
 /**
  * Created by carlos on 29/12/17.
@@ -441,7 +432,7 @@ public class MesospherePutAppStepPlugin implements StepPlugin {
         String mesosApiHost = mesosServiceApiURL ?: ProjectPropertiesUtils.getMesosHostPortConfig(context)
         String mesosApiToken = apiToken ?: ProjectPropertiesUtils.getMesosApiTokenConfig(context)
 
-        RestClientUtils.putApp(mesosApiHost, mesosApiToken, id, createMapPropertiesToRequest(),
+        RestClientUtils.putApp(mesosApiHost, mesosApiToken, id?.toLowerCase(), createMapPropertiesToRequest(),
                 [force: (force == "yes"), partialUpdate: (partialUpdate == "yes")], context)
         logger.info("End execution step - Put App Step Plugin...")
     }
@@ -464,7 +455,9 @@ public class MesospherePutAppStepPlugin implements StepPlugin {
         } else {
             propWithValues.each { p ->
                 def value = p.value
-                if(fieldIsJsonType(p.key)){
+                if(p.key == "id"){
+                    propertiesToRequest.put(p.key, value?.toString()?.toLowerCase())
+                } else if(fieldIsJsonType(p.key)){
                     def slurper = new JsonSlurper()
                     propertiesToRequest.put(p.key, slurper.parseText(value?.toString()))
                 } else if(fieldIsDoubleType(p.key)) {
