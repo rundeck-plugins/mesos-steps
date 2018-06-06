@@ -40,7 +40,7 @@ class MesosphereGetTasksStepPlugin  implements StepPlugin {
         String mesosApiHost = mesosServiceApiURL ?: ProjectPropertiesUtils.getMesosHostPortConfig(context)
         String mesosApiToken = apiToken ?: ProjectPropertiesUtils.getMesosApiTokenConfig(context)
 
-        RestClientUtils.getTaskApp(mesosApiHost, mesosApiToken, id, context)
+        RestClientUtils.getTaskApp(mesosApiHost, mesosApiToken, id?.toLowerCase(), context)
         logger.info("End execution step - Get Tasks Step Plugin...")
     }
 }

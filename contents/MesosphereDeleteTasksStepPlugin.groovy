@@ -58,7 +58,7 @@ class MesosphereDeleteTasksStepPlugin implements StepPlugin{
         String mesosApiHost = mesosServiceApiURL ?: ProjectPropertiesUtils.getMesosHostPortConfig(context)
         String mesosApiToken = apiToken ?: ProjectPropertiesUtils.getMesosApiTokenConfig(context)
 
-        RestClientUtils.deleteTaskApp(mesosApiHost, mesosApiToken, id,
+        RestClientUtils.deleteTaskApp(mesosApiHost, mesosApiToken, id?.toLowerCase(),
                 [force: force, host: host, scale: scale, wipe: wipe], context)
         logger.info("End execution step - Delete Tast from App Step Plugin...")
     }

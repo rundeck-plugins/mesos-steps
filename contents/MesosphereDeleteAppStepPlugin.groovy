@@ -1,3 +1,4 @@
+import RestClientUtils
 import com.dtolabs.rundeck.core.execution.workflow.steps.StepException
 import com.dtolabs.rundeck.core.plugins.Plugin
 import com.dtolabs.rundeck.plugins.ServiceNameConstants
@@ -5,7 +6,6 @@ import com.dtolabs.rundeck.plugins.descriptions.PluginDescription
 import com.dtolabs.rundeck.plugins.descriptions.PluginProperty
 import com.dtolabs.rundeck.plugins.step.PluginStepContext
 import com.dtolabs.rundeck.plugins.step.StepPlugin
-import RestClientUtils
 import org.apache.log4j.Logger
 
 /**
@@ -44,7 +44,7 @@ class MesosphereDeleteAppStepPlugin implements StepPlugin {
         String mesosApiHost = mesosServiceApiURL ?: ProjectPropertiesUtils.getMesosHostPortConfig(context)
         String mesosApiToken = apiToken ?: ProjectPropertiesUtils.getMesosApiTokenConfig(context)
 
-        RestClientUtils.deleteApp(mesosApiHost, mesosApiToken, id, [force: force], context)
+        RestClientUtils.deleteApp(mesosApiHost, mesosApiToken, id?.toLowerCase(), [force: force], context)
         logger.info("End execution step - Delete App Step Plugin...")
     }
 }
