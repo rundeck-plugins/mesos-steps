@@ -7,5 +7,6 @@ public enum MesosFailReason implements FailureReason {
     AppAlreadyExists,
     InvalidObject,
     requestFailed,
-    AppNotExists
+    AppNotExists,
+    TasksAreNotRunning
 }

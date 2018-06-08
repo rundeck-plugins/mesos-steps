@@ -20,7 +20,8 @@ class RestClientUtils {
     public static final String URI_TASKS = '/tasks'
 
     public
-    static putApp(String mesosServiceApiURL, String apiToken, String appId, Map properties, Map queryParams, PluginStepContext context) {
+    static putApp(String mesosServiceApiURL, String apiToken, Integer timeToWait, Integer timesToTry,
+                  String appId, Map properties, Map queryParams, PluginStepContext context) {
         logger.info("Calling put app on mesos service API...");
 
         def serviceAPI = new HTTPBuilder(mesosServiceApiURL)
@@ -31,6 +32,8 @@ class RestClientUtils {
             headers['Accept'] = 'application/json'
             headers["Content-Type"] = "application/json; charset=utf8"
         }
+
+        if(timesToTry < 1) timesToTry = 1
 
         serviceAPI.request(Method.PUT, "application/json; charset=utf8") { req ->
             logger.info("Mounting requisition...")
@@ -45,12 +48,29 @@ class RestClientUtils {
                 HashMap<String, String> meta = new HashMap<>();
                 meta.put("content-data-type", "application/json");
                 logger.info("Verifying if all tasks is running...")
-                getTaskApp(mesosServiceApiURL, apiToken, appId, context,
-                        context.getExecutionContext().loglevel == Constants.DEBUG_LEVEL, true)
 
-                refreshNodeSet(context)
-                logger.info("requisition finished with success. json response: ${json.toString()}")
-                context.getExecutionContext().getExecutionListener().log(Constants.INFO_LEVEL, json.toString());
+                int tries = 1
+                boolean thereIsTaksRunning = false
+
+                while (tries <= timesToTry && !thereIsTaksRunning){
+                    Thread.sleep((timeToWait ?: 0) * 1000)
+                     thereIsTaksRunning = getTaskApp(mesosServiceApiURL, apiToken, appId, context,
+                            context.getExecutionContext().loglevel == Constants.DEBUG_LEVEL, true)
+
+                    tries++
+                }
+
+                if(thereIsTaksRunning){
+                    refreshNodeSet(context)
+                    logger.info("requisition finished with success. json response: ${json.toString()}")
+                    context.getExecutionContext().getExecutionListener().log(Constants.INFO_LEVEL, json.toString());
+                } else {
+                    logger.error("Tasks are not running yet")
+                    deleteApp(mesosServiceApiURL, apiToken, appId, [force: true], context)
+                    context.getExecutionContext().getExecutionListener().log(
+                            Constants.INFO_LEVEL, "Tasks are not running yet");
+                    throw new StepException("Tasks are not running", MesosFailReason.TasksAreNotRunning)
+                }
             }
             response.'400' = { resp ->
                 logger.error("Requisition returned status ${resp.status} - Invalid JSON")
@@ -111,8 +131,8 @@ class RestClientUtils {
         }
     }
 
-    public static getTaskApp(String mesosServiceApiURL, String apiToken, String appId, PluginStepContext context, boolean showLog = true,
-                      boolean verifyTasksRunning = false, int limitCalls = 10, int calls = 0) {
+    public static boolean getTaskApp(String mesosServiceApiURL, String apiToken, String appId, PluginStepContext context, boolean showLog = true,
+                      boolean verifyTasksRunning = false) {
         logger.info("Calling get tasks of an app on mesos service API...")
         def serviceAPI = new HTTPBuilder(mesosServiceApiURL)
         if (apiToken) {
@@ -133,21 +153,24 @@ class RestClientUtils {
                 HashMap<String, String> meta = new HashMap<>();
                 meta.put("content-data-type", "application/json");
                 List tasks = json.tasks
+
                 if (verifyTasksRunning) {
                     logger.info("Verifying if tasks are running: Iterating on tasks...")
-                    tasks.each { Map task ->
-                        if (task.state != "TASK_RUNNING" && calls < limitCalls) {
-                            logger.info("Task state: ${task.state}. Attempt: ${calls}")
-                            calls++;
-                            getTaskApp(mesosServiceApiURL, apiToken, appId, context,
-                                    context.getExecutionContext().loglevel == Constants.DEBUG_LEVEL,
-                                    true, limitCalls, calls)
+                    boolean thereIsTasksRunning = true
+                    tasks?.each { Map task ->
+                        if (task.state != "TASK_RUNNING") {
+                            logger.info("Task state: ${task.state}")
+                            thereIsTasksRunning = false
                         }
                     }
+
+                    if(!thereIsTasksRunning) return thereIsTasksRunning
                 }
                 refreshNodeSet(context)
                 logger.info("requisition finished with success. json response: ${json.toString()}")
                 if (showLog) context.getExecutionContext().getExecutionListener().log(Constants.INFO_LEVEL, json.toString())
+
+                return true
             }
             response.'401' = { resp ->
                 logger.error("Requisition returned status ${resp.status} - Invalid username or password.")
@@ -223,8 +246,14 @@ class RestClientUtils {
 
                 tasks?.each {taskToRemove ->
                     ExecutionReference er = executionReferenceList?.find {ExecutionReference executionReference ->
-                        ((String)taskToRemove.appId).contains(
-                                "${context.frameworkProject?.toLowerCase()}-${executionReference.getJob().id}-${executionReference.id}")
+                        String appIdentfier = taskToRemove.appId
+                        boolean containsProjectName = appIdentfier.contains(context.frameworkProject?.toLowerCase())
+                        appIdentfier = appIdentfier - context.frameworkProject?.toLowerCase()
+                        boolean containsJobId = appIdentfier.contains(executionReference.getJob().id)
+                        appIdentfier = appIdentfier - executionReference.getJob().id
+                        boolean containsExectutionId = appIdentfier.contains(executionReference.id)
+
+                        return containsExectutionId && containsJobId && containsProjectName
                     }
 
                     if (er && showLog) context.getExecutionContext().getExecutionListener().log(

@@ -102,6 +102,31 @@ public class MesospherePutAppStepPlugin implements StepPlugin {
     )
     String apiToken
 
+    @PluginProperty(title = "Wait to check", required = false,
+            validatorClass = IntegerValidator.class,
+            description = "Time to wait to ckeck if all tasks is running"
+    )
+    @RenderingOptions(
+            [
+                    @RenderingOption(key = GROUP_NAME, value = "Mesos Service Config"),
+                    @RenderingOption(key = GROUPING, value = "secondary")
+            ]
+    )
+    String timeToWait
+
+    @PluginProperty(title = "Number of times to try", required = false,
+            validatorClass = IntegerValidator.class,
+            defaultValue = '1',
+            description = "Number of times to try before failing the job"
+    )
+    @RenderingOptions(
+            [
+                    @RenderingOption(key = GROUP_NAME, value = "Mesos Service Config"),
+                    @RenderingOption(key = GROUPING, value = "secondary")
+            ]
+    )
+    String timesToTry
+
     //END: Service config
 
     //Advanced settings
@@ -432,7 +457,9 @@ public class MesospherePutAppStepPlugin implements StepPlugin {
         String mesosApiHost = mesosServiceApiURL ?: ProjectPropertiesUtils.getMesosHostPortConfig(context)
         String mesosApiToken = apiToken ?: ProjectPropertiesUtils.getMesosApiTokenConfig(context)
 
-        RestClientUtils.putApp(mesosApiHost, mesosApiToken, id?.toLowerCase(), createMapPropertiesToRequest(),
+        RestClientUtils.putApp(mesosApiHost, mesosApiToken, parseValuesToInteger(timeToWait),
+                parseValuesToInteger(timesToTry),
+                id?.toLowerCase(), createMapPropertiesToRequest(),
                 [force: (force == "yes"), partialUpdate: (partialUpdate == "yes")], context)
         logger.info("End execution step - Put App Step Plugin...")
     }
@@ -447,6 +474,8 @@ public class MesospherePutAppStepPlugin implements StepPlugin {
                   'partialUpdate',
                   'mapPropertiesToRequest',
                   'apiToken',
+                  'timeToWait',
+                  'timesToTry',
                   'fullJsonConfig'].contains(it.key)}
 
         if(StringUtils.isNotBlank(fullJsonConfig)){
