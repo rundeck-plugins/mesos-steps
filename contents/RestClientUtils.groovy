@@ -247,13 +247,11 @@ class RestClientUtils {
                 tasks?.each {taskToRemove ->
                     ExecutionReference er = executionReferenceList?.find {ExecutionReference executionReference ->
                         String appIdentfier = taskToRemove.appId
-                        boolean containsProjectName = appIdentfier.contains(context.frameworkProject?.toLowerCase())
-                        appIdentfier = appIdentfier - context.frameworkProject?.toLowerCase()
                         boolean containsJobId = appIdentfier.contains(executionReference.getJob().id)
                         appIdentfier = appIdentfier - executionReference.getJob().id
                         boolean containsExectutionId = appIdentfier.contains(executionReference.id)
 
-                        return containsExectutionId && containsJobId && containsProjectName
+                        return containsExectutionId && containsJobId
                     }
 
                     if (er && showLog) context.getExecutionContext().getExecutionListener().log(
