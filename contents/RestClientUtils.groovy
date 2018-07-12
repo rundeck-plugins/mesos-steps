@@ -247,8 +247,9 @@ class RestClientUtils {
                 tasks?.each {taskToRemove ->
                     ExecutionReference er = executionReferenceList?.find {ExecutionReference executionReference ->
                         String appIdentfier = taskToRemove.appId
-                        boolean containsJobId = appIdentfier.contains(executionReference.getJob().id)
-                        appIdentfier = appIdentfier - executionReference.getJob().id
+                        String jobReferenceId = executionReference?.getJob()?.id
+                        boolean containsJobId = jobReferenceId && appIdentfier?.contains(jobReferenceId)
+                        appIdentfier = jobReferenceId ? (appIdentfier - jobReferenceId) : appIdentfier
                         boolean containsExectutionId = appIdentfier.contains(executionReference.id)
 
                         return containsExectutionId && containsJobId

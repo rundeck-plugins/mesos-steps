@@ -4,7 +4,7 @@ import com.dtolabs.rundeck.core.plugins.configuration.ValidationException;
 public class IntegerValidator implements PropertyValidator {
     @Override
     public boolean isValid(final String value) throws ValidationException {
-        if(value.equals("")) return true;
+        if(value.equals("") || value.startsWith("$")) return true;
 
         try{
             Integer.parseInt(value);

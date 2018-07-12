@@ -80,7 +80,7 @@ public class MesospherePutAppStepPlugin implements StepPlugin {
     //END: Main properties
 
     //Service Configs
-    @PluginProperty(title = "Mesos Service Api URL", required = false,
+    @PluginProperty(title = "Mesos Service Api URL",
             description = "Address to access mesos service api."
     )
     @RenderingOptions(
@@ -491,6 +491,8 @@ public class MesospherePutAppStepPlugin implements StepPlugin {
                     propertiesToRequest.put(p.key, slurper.parseText(value?.toString()))
                 } else if(fieldIsDoubleType(p.key)) {
                     propertiesToRequest.put(p.key, parseValuesToDouble(value))
+                } else if(fieldIsDoubleTypeOrPreSetValue(p.key)) {
+                    propertiesToRequest.put(p.key, parseValuesToDouble(value))
                 } else if(fieldIsIntegerType(p.key)){
                     propertiesToRequest.put(p.key, parseValuesToInteger(value))
                 } else if(fieldHaveArrayValue(p.value)) {
@@ -513,7 +515,11 @@ public class MesospherePutAppStepPlugin implements StepPlugin {
     }
 
     private boolean fieldIsDoubleType(String propName){
-        return ["mem", "cpus", "disk", "backoffFactor"].contains(propName)
+        return ["backoffFactor"].contains(propName)
+    }
+
+    private boolean fieldIsDoubleTypeOrPreSetValue(String propName){
+        return ["mem", "cpus", "disk"].contains(propName)
     }
 
     private boolean fieldIsBooleanType(String propName){

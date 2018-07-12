@@ -18,7 +18,7 @@ class MesosphereCleanupStepPlugin implements StepPlugin {
     public static final String PROVIDER_NAME = "mesos-cleanup-step";
     public static final Logger logger = Logger.getLogger(MesosphereCleanupStepPlugin.class)
 
-    @PluginProperty(title = "Mesos Service Api URL", required = false,
+    @PluginProperty(title = "Mesos Service Api URL",
             description = "Address to access mesos service api."
     )
     String mesosServiceApiURL
