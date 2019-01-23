@@ -7,7 +7,7 @@ group 'com.rundeck'
 ext.rundeckPluginVersion = '1.2'
 ext.pluginClassNames='MesospherePutAppStepPlugin,MesosphereGetTasksStepPlugin,MesosphereDeleteTasksStepPlugin,MesosphereDeleteAppStepPlugin,MesosphereCleanupStepPlugin,ResourceModelFactory'
 ext.pluginName = 'Mesos Step Plugin'
-ext.pluginDescription = 'Step plugin for Mesos API'
+ext.pluginDescription = 'Workflow steps to create and use apps and tasks using Mesos API'
 
 //sourceCompatibility = 1.8
 
@@ -95,6 +95,14 @@ jar {
     from "$buildDir/output"
     manifest {
         def libList = configurations.pluginLibs.collect{'lib/' + it.name}.join(' ')
+        attributes 'Rundeck-Plugin-Name' : pluginName
+        attributes 'Rundeck-Plugin-Description' : pluginDescription
+        attributes 'Rundeck-Plugin-Rundeck-Compatibility-Version': '2.10.1+'
+        attributes 'Rundeck-Plugin-Tags': 'java,workflow step,resource model,mesos'
+        attributes 'Rundeck-Plugin-License': 'Apache 2.0'
+        attributes 'Rundeck-Plugin-Source-Link': 'https://github.com/rundeck-plugins/mesos-steps'
+        attributes 'Rundeck-Plugin-Target-Host-Compatibility': 'all'
+        attributes 'Rundeck-Plugin-Author': 'Rundeck, Inc.'
         attributes 'Rundeck-Plugin-Classnames': pluginClassNames
         attributes 'Rundeck-Plugin-File-Version': project.version
         attributes 'Rundeck-Plugin-Version': rundeckPluginVersion
